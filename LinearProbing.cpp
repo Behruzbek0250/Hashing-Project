@@ -9,28 +9,30 @@
 #include <bits/stdc++.h>
 #include <cstdlib>
 #include <limits>
-const int CAPACITY = 200;
+const int CAPACITY = 10000;
 using namespace std;
 struct Item {
     string Title_of_book, Authors, Average_rating, Num_pages, Ratings_count;
-    Item *next;
-    Item *prev;
     Item(string Title_of_book, string Authors, string Average_rating, string Num_pages, string Ratings_count) {
         this->Title_of_book = Title_of_book;
         this->Authors = Authors;
         this->Average_rating = Average_rating;
         this->Num_pages = Num_pages;
         this->Ratings_count = Ratings_count;
-        this->next = NULL;
     }
 };
 class HashTable {
 public:
-    Item **ht, **top;
+    Item **ht;
+    bool flag[CAPACITY];
+    int count = 0;
     HashTable() {
         ht = new Item*[CAPACITY];
         for (int i = 0; i < CAPACITY; i++) {
             ht[i] = NULL;
+        }
+        for (int i = 0; i < CAPACITY; i++) {
+            flag[i] = false;
         }
     }
     int HashFunc(string key) {
@@ -41,81 +43,88 @@ public:
         return a % CAPACITY;
     }
     void Insert(string Title_of_book, string Authors, string Average_rating, string Num_pages, string Ratings_count) {
+        int c1 = 0;
+        if (count >= CAPACITY)
+            return;
         int hashKey = HashFunc(Title_of_book);
-        Item* prev = NULL;
-        Item* en = ht[hashKey];
+        Item *en = ht[hashKey];
         while (en != NULL) {
-            prev = en;
-            en = en->next;
+            hashKey++;
+            hashKey %= CAPACITY;
+            en = ht[hashKey];
+            c1++;
+            if (c1 >= CAPACITY) {
+                cout << "The table is full!" << endl;
+                return;
+            }
         }
-        if (en == NULL) {
+        if (en == NULL){
             en = new Item(Title_of_book, Authors, Average_rating, Num_pages, Ratings_count);
-            if (prev == NULL)
-                ht[hashKey] = en;
-            else
-                prev->next = en;
-        } else {
+            ht[hashKey] = en;
+            count++;
+        }
+        else {
             en->Authors = Authors;
             en->Average_rating = Average_rating;
             en->Num_pages = Num_pages;
             en->Ratings_count = Ratings_count;
         }
     }
+
     void Remove(string key) {
-        int hash_v = HashFunc(key);
-        Item* en = ht[hash_v];
-        Item* p = NULL;
-        if (en == NULL || en->Title_of_book != key) {
-            cout << "No Element found at key " << key << endl;
-            return;
-        }
-        while (en->next != NULL) {
-            p = en;
-            en = en->next;
-        }
-        if (p != NULL)
-            p->next = en->next;
-        delete en;
-        cout << "Element Deleted" << endl;
-    }
-    void SearchKey(string k) {
-        int hash_v = HashFunc(k);
-        bool flag = false;
-        Item* en = ht[hash_v];
-        if (en != NULL) {
-            while (en != NULL) {
-                if (en->Title_of_book == k)
-                    flag = true;
-                if (flag)
-                    cout << "Element found at Title " << k << ": " << endl << "Authors: " << en->Authors << endl
-                            << "Average rating: " << en->Average_rating << endl
-                            << "Number of pages: " << en->Num_pages << endl
-                            << "Ratings count: " << en->Ratings_count << endl;
-                en = en->next;
+        int c1 = 0;
+        int hashKey = HashFunc(key);
+        Item* en = ht[hashKey];
+        while (en != NULL || flag[hashKey]) {
+            if (en->Title_of_book == key) {
+                ht[hashKey] = NULL;
+                flag[hashKey] = true;
+                if (flag[hashKey - 1] || ht[hashKey - 1] == NULL || hashKey <= 0)
+                    flag[hashKey + 1] = false;
+                cout << "Element Deleted" << endl;
+                count--;
+                return;
+            }
+            hashKey++;
+            hashKey %= CAPACITY;
+            en = ht[hashKey];
+            c1++;
+            if (c1 >= CAPACITY){
+                cout << "The item was not found!" << endl;
+                return;
             }
         }
-        if (!flag)
-            cout << "No Element found at key " << k << endl;
+        cout << "The item was not found!" << endl;
+        return;
+    }
+    void SearchKey(string key) {
+        int c1 = 0;
+        int hashKey = HashFunc(key);
+        Item* en = ht[hashKey];
+        while (en != NULL || flag[hashKey]) {
+            if (en->Title_of_book == key) {
+                cout << "Element found with Title " << key << ": " << endl << "Authors: " << en->Authors << endl
+                     << "Average rating: " << en->Average_rating << endl
+                     << "Number of pages: " << en->Num_pages << endl
+                     << "Ratings count: " << en->Ratings_count << endl;
+                return;
+            }
+            hashKey++;
+            hashKey %= CAPACITY;
+            en = ht[hashKey];
+            c1++;
+            if (c1 >= CAPACITY){
+                cout << "The item was not found!" << endl;
+                return;
+            }
+        }
+        cout << "The item was not found!" << endl;
+        return;
     }
     ~HashTable() {
         delete [] ht;
     }
 };
-
-//void create()
-//{
-//    fstream fout;
-//    fout.open("Good_books.csv", ios::out | ios::app);
-//    cout << "Enter the details of 5 students: " << "roll Title_of_book maths phy chem bio" << endl;
-//    string Title_of_book, Authors;
-//    float Average_rating;
-//    int i, Num_pages;
-//    long int Ratings_count;
-//    for (i = 1; i < 201; i++) {
-//        cin >> Title_of_book >> Authors >> Average_rating >> Num_pages >> Ratings_count;
-//        fout << Title_of_book << ", " << Authors << ", " << Average_rating << ", " << Num_pages << ", " << Ratings_count << "\n";
-//    }
-//}
 
 void read_record(HashTable ht) {
     fstream fin;
