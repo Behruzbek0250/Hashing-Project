@@ -3,8 +3,6 @@
 #include <ctime>
 #define MAX_NUMBER 10
 #define ver 2
-
-
 int hashtable[ver][MAX_NUMBER];
 int idx[ver];
 void initialize_table() {
