@@ -78,7 +78,8 @@ public:
         while (en != NULL || flag[hashKey]) {
             if (en->Title_of_book == key) {
                 ht[hashKey] = NULL;
-                flag[hashKey] = true;
+                if (HashFunc(en->Title_of_book) != hashKey)
+                    flag[hashKey] = true;
                 if (flag[hashKey - 1] || ht[hashKey - 1] == NULL || hashKey <= 0)
                     flag[hashKey + 1] = false;
                 cout << "Element Deleted" << endl;
