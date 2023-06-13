@@ -134,6 +134,7 @@ public:
     }
 };
 
+
 void read_record(HashTable ht) {
     fstream fin;
     fin.open("Good_books.csv", ios::in);
